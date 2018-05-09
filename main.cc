@@ -25,7 +25,7 @@ struct Backtrace
 	// this function *does* allocate every time you call it.
 	// Callable: fn(std::string_view symbol)
 	template <typename Callable>
-	void VisitSymbols(Callable visitor)
+	void VisitSymbols(Callable visitor) const
 	{
 		char **symbols = ::backtrace_symbols(mCallstack.data(), mFramesCount);
 
@@ -71,6 +71,21 @@ public:
 		Backtrace<MaxFramesCount> bt;
 		bt.mFramesCount = ::backtrace(bt.mCallstack.data(), MaxFramesCount);
 		++s[bt];
+	}
+
+	void Dump()
+	{
+		for (const auto& p : s)
+		{
+			const auto& backtrace = p.first;
+			const int calls = p.second;
+
+			std::cout << "called " << calls << ":\n";
+			backtrace.VisitSymbols([](std::string_view symbol)
+			{
+				std::cout << symbol << "\n";
+			});
+		}
 	}
 
 
@@ -133,30 +148,22 @@ private:
 
 };
 
+StackInspector2 ss;
+
+void buz()
+{
+	ss.StoreBacktrace();
+}
+
+
 void RRBacktrace()
 {
- StackInspector2 ss;
-
 auto start = std::chrono::steady_clock::now();
-ss.StoreBacktrace();
-ss.StoreBacktrace();
-ss.StoreBacktrace();
-ss.StoreBacktrace();
-ss.StoreBacktrace();
-ss.StoreBacktrace();
-ss.StoreBacktrace();
-ss.StoreBacktrace();
-ss.StoreBacktrace();
-ss.StoreBacktrace();
-ss.StoreBacktrace();
-ss.StoreBacktrace();
-ss.StoreBacktrace();
-ss.StoreBacktrace();
-ss.StoreBacktrace();
-ss.StoreBacktrace();
-ss.StoreBacktrace();
-//	std::string bt = ss.GetBacktrace();
+for (int i = 0; i < 10; ++i)
+buz();
 auto end = std::chrono::steady_clock::now();
+
+ss.Dump();
 
 
 //std::cout << bt << std::endl;
