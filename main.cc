@@ -43,8 +43,8 @@ struct Backtrace
 				&& std::equal(mCallstack.cbegin(), mCallstack.cbegin() + mFramesCount, rhs.mCallstack.cbegin());
 	}
 
-	int mFramesCount;
 	std::array<void*, MaxFramesCount> mCallstack;
+	int mFramesCount;
 };
 
 
