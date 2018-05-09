@@ -21,12 +21,12 @@ extern "C"
 template <std::size_t MaxFramesCount>
 struct Backtrace
 {
-	bool operator==(const Backtrace& rhs) const 
-	{ 
-		return mFramesCount == rhs.mFramesCount 
-			&& std::equal(mCallstack.cbegin(), mCallstack.cbegin() + mFramesCount, rhs.mCallstack.cbegin());
+	bool operator==(const Backtrace& rhs) const
+	{
+		return mFramesCount == rhs.mFramesCount
+				&& std::equal(mCallstack.cbegin(), mCallstack.cbegin() + mFramesCount, rhs.mCallstack.cbegin());
 	}
- 
+
 	int mFramesCount;
 	std::array<void*, MaxFramesCount> mCallstack;
 };
@@ -39,8 +39,7 @@ struct hash<::Backtrace<MaxFramesCount>>
 {
 	std::size_t operator()(const Backtrace<MaxFramesCount>& bt) const
 	{
-		 std::size_t hash = boost::hash_range(bt.mCallstack.begin(), bt.mCallstack.end());
-		return hash;
+		return boost::hash_range(bt.mCallstack.cbegin(), bt.mCallstack.cbegin() + bt.mFramesCount);
 	}
 };
 }
@@ -66,47 +65,47 @@ struct StackInspector2
 template <std::size_t MaxFramesCount>
 struct StackInspector
 {
-    std::array<void*, MaxFramesCount> mCallstack;
+	std::array<void*, MaxFramesCount> mCallstack;
 
 	std::string GetBacktrace()
 	{
-    std::ostringstream trace_buf;
-    std::array<void*, MaxFramesCount> callstack;
-    char buf[1024];
-    const int nFrames = ::backtrace(callstack.data(), MaxFramesCount);
+	std::ostringstream trace_buf;
+	std::array<void*, MaxFramesCount> callstack;
+	char buf[1024];
+	const int nFrames = ::backtrace(callstack.data(), MaxFramesCount);
 
-	for (int i = 1; i < nFrames; i++) 
+	for (int i = 1; i < nFrames; i++)
 		trace_buf << std::hex << callstack[i] << "\n";
 
 /*
-    char **symbols = ::backtrace_symbols(callstack.data(), nFrames);
+	char **symbols = ::backtrace_symbols(callstack.data(), nFrames);
 
-    for (int i = 1; i < nFrames; i++) 
+	for (int i = 1; i < nFrames; i++)
 	{
-        //printf("%s\n", symbols[i]);
+		//printf("%s\n", symbols[i]);
 
-        Dl_info info;
-        if (::dladdr(callstack[i], &info) && info.dli_sname) {
-            char *demangled = NULL;
-            int status = -1;
-            if (info.dli_sname[0] == '_')
-                demangled = abi::__cxa_demangle(info.dli_sname, NULL, 0, &status);
-            snprintf(buf, sizeof(buf), "%-3d %*p %s + %zd\n",
-                     i, int(2 + sizeof(void*) * 2), callstack[i],
-                     status == 0 ? demangled :
-                     info.dli_sname == 0 ? symbols[i] : info.dli_sname,
-                     (char *)callstack[i] - (char *)info.dli_saddr);
-            free(demangled);
-        }
+		Dl_info info;
+		if (::dladdr(callstack[i], &info) && info.dli_sname) {
+			char *demangled = NULL;
+			int status = -1;
+			if (info.dli_sname[0] == '_')
+				demangled = abi::__cxa_demangle(info.dli_sname, NULL, 0, &status);
+			snprintf(buf, sizeof(buf), "%-3d %*p %s + %zd\n",
+					 i, int(2 + sizeof(void*) * 2), callstack[i],
+					 status == 0 ? demangled :
+					 info.dli_sname == 0 ? symbols[i] : info.dli_sname,
+					 (char *)callstack[i] - (char *)info.dli_saddr);
+			free(demangled);
+		}
  else {
-           snprintf(buf, sizeof(buf), "%-3d %*p %s\n",
-                     i, int(2 + sizeof(void*) * 2), callstack[i], symbols[i]);
-        }
-        trace_buf << buf;
-    }
-    free(symbols);
-    if (nFrames == MaxFramesCount)
-        trace_buf << "[truncated]\n";
+		   snprintf(buf, sizeof(buf), "%-3d %*p %s\n",
+					 i, int(2 + sizeof(void*) * 2), callstack[i], symbols[i]);
+		}
+		trace_buf << buf;
+	}
+	free(symbols);
+	if (nFrames == MaxFramesCount)
+		trace_buf << "[truncated]\n";
 */
 return trace_buf.str();
 	}
@@ -115,9 +114,9 @@ private:
 
 };
 
-void RRBacktrace() 
+void RRBacktrace()
 {
- StackInspector2 ss; 
+ StackInspector2 ss;
 
 auto start = std::chrono::steady_clock::now();
 ss.StoreBacktrace();
