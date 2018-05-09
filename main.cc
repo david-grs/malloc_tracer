@@ -18,6 +18,7 @@ extern "C"
 #include <string_view>
 
 #include <boost/functional/hash.hpp>
+#include <boost/optional/optional.hpp>
 
 template <std::size_t MaxFramesCount>
 struct Backtrace
@@ -33,6 +34,41 @@ struct Backtrace
 		{
 			const std::size_t symbolLen = std::strlen(symbols[i]);
 			const std::string_view symbol(symbols[i], symbolLen);
+			visitor(symbol);
+		}
+	}
+
+	template <typename Callable>
+	void VisitDemangledSymbols(Callable visitor) const
+	{
+		char **symbols = ::backtrace_symbols(mCallstack.data(), mFramesCount);
+
+		for (int i = 1; i < mFramesCount; i++)
+		{
+			std::string_view symbol;
+			char buff[256];
+			Dl_info info;
+
+			if (::dladdr(mCallstack[i], &info) && info.dli_sname && info.dli_sname[0] == '_')
+			{
+				std::size_t length = sizeof(buff);
+				int status;
+
+				(void)abi::__cxa_demangle(info.dli_sname, buff, &length, &status);
+
+				if (status == 0)
+				{
+					symbol = std::string_view(buff, length);
+				}
+			}
+
+			// we fallback to dli_sname, or to the symbol name
+			if (symbol.empty())
+			{
+				const std::size_t symbolLen = std::strlen(info.dli_sname ? info.dli_sname : symbols[i]);
+				symbol = std::string_view(info.dli_sname ? info.dli_sname : symbols[i], symbolLen);
+			}
+
 			visitor(symbol);
 		}
 	}
@@ -81,7 +117,7 @@ public:
 			const int calls = p.second;
 
 			std::cout << "called " << calls << ":\n";
-			backtrace.VisitSymbols([](std::string_view symbol)
+			backtrace.VisitDemangledSymbols([](std::string_view symbol)
 			{
 				std::cout << symbol << "\n";
 			});
@@ -118,25 +154,6 @@ struct StackInspector
 	{
 		//printf("%s\n", symbols[i]);
 
-		Dl_info info;
-		if (::dladdr(callstack[i], &info) && info.dli_sname) {
-			char *demangled = NULL;
-			int status = -1;
-			if (info.dli_sname[0] == '_')
-				demangled = abi::__cxa_demangle(info.dli_sname, NULL, 0, &status);
-			snprintf(buf, sizeof(buf), "%-3d %*p %s + %zd\n",
-					 i, int(2 + sizeof(void*) * 2), callstack[i],
-					 status == 0 ? demangled :
-					 info.dli_sname == 0 ? symbols[i] : info.dli_sname,
-					 (char *)callstack[i] - (char *)info.dli_saddr);
-			free(demangled);
-		}
- else {
-		   snprintf(buf, sizeof(buf), "%-3d %*p %s\n",
-					 i, int(2 + sizeof(void*) * 2), callstack[i], symbols[i]);
-		}
-		trace_buf << buf;
-	}
 	free(symbols);
 	if (nFrames == MaxFramesCount)
 		trace_buf << "[truncated]\n";
@@ -148,9 +165,8 @@ private:
 
 };
 
-StackInspector2 ss;
 
-void buz()
+void buz(StackInspector2& ss)
 {
 	ss.StoreBacktrace();
 }
@@ -158,9 +174,10 @@ void buz()
 
 void RRBacktrace()
 {
+	StackInspector2 ss;
 auto start = std::chrono::steady_clock::now();
-for (int i = 0; i < 10; ++i)
-buz();
+for (int i = 0; i < 1; ++i)
+buz(ss);
 auto end = std::chrono::steady_clock::now();
 
 ss.Dump();
