@@ -15,12 +15,28 @@ extern "C"
 #include <chrono>
 #include <unordered_map>
 #include <algorithm>
+#include <string_view>
 
 #include <boost/functional/hash.hpp>
 
 template <std::size_t MaxFramesCount>
 struct Backtrace
 {
+	// this function *does* allocate every time you call it.
+	// Callable: fn(std::string_view symbol)
+	template <typename Callable>
+	void VisitSymbols(Callable visitor)
+	{
+		char **symbols = ::backtrace_symbols(mCallstack.data(), mFramesCount);
+
+		for (int i = 1; i < mFramesCount; i++)
+		{
+			const std::size_t symbolLen = std::strlen(symbols[i]);
+			const std::string_view symbol(symbols[i], symbolLen);
+			visitor(symbol);
+		}
+	}
+
 	bool operator==(const Backtrace& rhs) const
 	{
 		return mFramesCount == rhs.mFramesCount
@@ -44,8 +60,9 @@ struct hash<::Backtrace<MaxFramesCount>>
 };
 }
 
-struct StackInspector2
+class StackInspector2
 {
+public:
 	static constexpr std::size_t MaxFramesCount = 5;
 
 	void StoreBacktrace()
@@ -56,6 +73,7 @@ struct StackInspector2
 	}
 
 
+private:
 	std::unordered_map<Backtrace<MaxFramesCount>, int> s;
 };
 
