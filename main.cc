@@ -131,41 +131,6 @@ private:
 
 
 
-// This function produces a stack backtrace with demangled function & method names.
-template <std::size_t MaxFramesCount>
-struct StackInspector
-{
-	std::array<void*, MaxFramesCount> mCallstack;
-
-	std::string GetBacktrace()
-	{
-	std::ostringstream trace_buf;
-	std::array<void*, MaxFramesCount> callstack;
-	char buf[1024];
-	const int nFrames = ::backtrace(callstack.data(), MaxFramesCount);
-
-	for (int i = 1; i < nFrames; i++)
-		trace_buf << std::hex << callstack[i] << "\n";
-
-/*
-	char **symbols = ::backtrace_symbols(callstack.data(), nFrames);
-
-	for (int i = 1; i < nFrames; i++)
-	{
-		//printf("%s\n", symbols[i]);
-
-	free(symbols);
-	if (nFrames == MaxFramesCount)
-		trace_buf << "[truncated]\n";
-*/
-return trace_buf.str();
-	}
-
-private:
-
-};
-
-
 void buz(StackInspector2& ss)
 {
 	ss.StoreBacktrace();
