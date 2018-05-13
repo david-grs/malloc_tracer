@@ -58,7 +58,7 @@ struct Backtrace
 
 				if (status == 0)
 				{
-					symbol = std::string_view(buff, length);
+					symbol = std::string_view(buff, std::strlen(buff));
 				}
 			}
 
