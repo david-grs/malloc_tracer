@@ -63,10 +63,12 @@ struct Backtrace
 			}
 
 			// we fallback to dli_sname, or to the symbol name
-			if (symbol.empty())
+			if (symbol.empty() && info.dli_sname)
 			{
-				const std::size_t symbolLen = std::strlen(info.dli_sname ? info.dli_sname : symbols[i]);
-				symbol = std::string_view(info.dli_sname ? info.dli_sname : symbols[i], symbolLen);
+				const char* symbolStr = info.dli_sname ? info.dli_sname : symbols[i];
+				const std::size_t symbolLen = std::strlen(symbolStr);
+
+				symbol = std::string_view(symbolStr, symbolLen);
 			}
 
 			visitor(symbol);
