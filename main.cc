@@ -21,8 +21,16 @@ extern "C"
 #include <boost/optional/optional.hpp>
 
 template <std::size_t MaxFramesCount>
-struct Backtrace
+class Backtrace
 {
+public:
+	static Backtrace ReadCurrentBacktrace()
+	{
+		Backtrace backtrace;
+		backtrace.mFramesCount = ::backtrace(backtrace.mCallstack.data(), MaxFramesCount);
+		return backtrace;
+	}
+
 	// this function *does* allocate every time you call it.
 	// Callable: fn(std::string_view symbol)
 	template <typename Callable>
@@ -81,6 +89,7 @@ struct Backtrace
 				&& std::equal(mCallstack.cbegin(), mCallstack.cbegin() + mFramesCount, rhs.mCallstack.cbegin());
 	}
 
+private:
 	std::array<void*, MaxFramesCount> mCallstack;
 	int mFramesCount;
 };
@@ -106,9 +115,8 @@ public:
 
 	void StoreBacktrace()
 	{
-		Backtrace<MaxFramesCount> bt;
-		bt.mFramesCount = ::backtrace(bt.mCallstack.data(), MaxFramesCount);
-		++s[bt];
+		Backtrace<MaxFramesCount> backtrace = Backtrace<MaxFramesCount>::ReadCurrentBacktrace();
+		++s[backtrace];
 	}
 
 	void Dump()
