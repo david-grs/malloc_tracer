@@ -10,6 +10,7 @@ extern "C"
 #include <cstring> // std::strlen
 #include <cstdlib> // std::free
 #include <algorithm> // std::equal
+#include <initializer_list>
 
 #include <boost/functional/hash.hpp>
 
@@ -17,12 +18,33 @@ template <std::size_t MaxFramesCount>
 class Backtrace
 {
 public:
+	Backtrace() :
+		mFramesCount(0)
+	{}
+
+	template <typename Iterator>
+	explicit Backtrace(Iterator begin, Iterator end) :
+		mFramesCount(0)
+	{
+		auto itStack = mCallstack.begin();
+		for (auto current = begin; current != end; ++current, ++itStack, ++mFramesCount)
+		{
+			*itStack = *current;
+		}
+	}
+
+	explicit Backtrace(std::initializer_list<void*> range) :
+		Backtrace(std::cbegin(range), std::cend(range))
+	{ }
+
 	static Backtrace ReadCurrentBacktrace()
 	{
 		Backtrace backtrace;
 		backtrace.mFramesCount = ::backtrace(backtrace.mCallstack.data(), MaxFramesCount);
 		return backtrace;
 	}
+
+	std::size_t size() const { return static_cast<std::size_t>(mFramesCount); }
 
 	// Callable: fn(const void* address)
 	template <typename Callable>

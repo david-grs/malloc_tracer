@@ -9,11 +9,9 @@ if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
 endif()
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${cxx_compile_options}")
-
 include(gtest.cmake)
 
 add_executable(tests unit_tests.cc backtrace.h stack_inspector.h)
-target_compile_options(tests PRIVATE ${cxx_compile_options})
 
 find_package (Threads)
 target_link_libraries(tests dl gtest ${CMAKE_THREAD_LIBS_INIT})
