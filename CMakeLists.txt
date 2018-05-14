@@ -10,5 +10,5 @@ endif()
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${cxx_compile_options}")
 
-add_executable(stack_inspector main.cc)
+add_executable(stack_inspector backtrace.h main.cc)
 target_link_libraries(stack_inspector dl)
