@@ -7,7 +7,7 @@
 class StackInspector2
 {
 public:
-	static constexpr std::size_t MaxFramesCount = 5;
+	static constexpr std::size_t MaxFramesCount = 10;
 
 	void StoreBacktrace()
 	{
