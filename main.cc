@@ -32,7 +32,7 @@ public:
 	}
 
 	template <typename Callable>
-	void VisitAddresses(Callable visitor)
+	void VisitAddresses(Callable visitor) const
 	{
 		for (int i = 1; i < mFramesCount; i++)
 		{
