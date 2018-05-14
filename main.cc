@@ -4,7 +4,7 @@
 #include <unordered_map>
 #include <chrono>
 
-class StackInspector2
+class StackInspector
 {
 public:
 	static constexpr std::size_t MaxFramesCount = 10;
@@ -15,21 +15,23 @@ public:
 		++s[backtrace];
 	}
 
-	void Dump()
+	template <typename StreamT>
+	void ToStream(StreamT& stream)
 	{
 		for (const auto& p : s)
 		{
 			const auto& backtrace = p.first;
 			const int calls = p.second;
 
-			std::cout << "called " << calls << ":\n";
-			backtrace.VisitDemangledSymbols([](std::string_view symbol)
+			stream << "called " << calls << ":\n";
+			backtrace.VisitDemangledSymbols([&stream](std::string_view symbol)
 			{
-				std::cout << symbol << "\n";
+				stream << symbol << "\n";
 			});
-			backtrace.VisitSymbols([](std::string_view symbol)
+
+			backtrace.VisitSymbols([&stream](std::string_view symbol)
 			{
-				std::cout << symbol << "\n";
+				stream << symbol << "\n";
 			});
 		}
 	}
@@ -40,21 +42,19 @@ private:
 };
 
 
-
-void buz(StackInspector2& ss)
+void buz(StackInspector& ss)
 {
 	ss.StoreBacktrace();
 }
 
-
 void RRBacktrace()
 {
-	StackInspector2 ss;
+	StackInspector ss;
 	auto start = std::chrono::steady_clock::now();
 	for (int i = 0; i < 1000; ++i)
 	{
 		buz(ss);
-		ss.Dump();
+		ss.ToStream(std::cout);
 	}
 	auto end = std::chrono::steady_clock::now();
 
