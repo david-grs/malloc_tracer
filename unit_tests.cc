@@ -53,7 +53,7 @@ void buz(A&);
 
 TEST(StackInspector, Read)
 {
-	static const int Iterations = 2;
+	static const int Iterations = 1000;
 
 	StackInspector ss;
 	A a(ss);
@@ -62,9 +62,9 @@ TEST(StackInspector, Read)
 	for (int i = 0; i < Iterations; ++i)
 	{
 		buz(a);
-		ss.ToStream(std::cout);
 	}
 	auto end = std::chrono::steady_clock::now();
+	ss.ToStream(std::cout);
 
 	std::cout << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / Iterations << " us" << std::endl;
 }
