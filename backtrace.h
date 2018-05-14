@@ -45,6 +45,8 @@ public:
 			const std::string_view symbol(symbols[i], symbolLen);
 			visitor(symbol);
 		}
+
+		std::free(symbols);
 	}
 
 	template <typename Callable>
@@ -82,6 +84,8 @@ public:
 
 			visitor(symbol);
 		}
+
+		std::free(symbols);
 	}
 
 	bool operator==(const Backtrace& rhs) const
