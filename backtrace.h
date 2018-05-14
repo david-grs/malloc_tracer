@@ -24,6 +24,7 @@ public:
 		return backtrace;
 	}
 
+	// Callable: fn(const void* address)
 	template <typename Callable>
 	void VisitAddresses(Callable visitor) const
 	{
@@ -50,6 +51,8 @@ public:
 		std::free(symbols);
 	}
 
+	// this function *does* allocate every time you call it.
+	// Callable: fn(std::string_view symbol)
 	template <typename Callable>
 	void VisitDemangledSymbols(Callable visitor) const
 	{
@@ -58,11 +61,14 @@ public:
 		for (int i = 1; i < mFramesCount; i++)
 		{
 			std::string_view symbol;
-			char buff[256];
 			Dl_info info;
 
 			if (::dladdr(mCallstack[i], &info) && info.dli_sname && info.dli_sname[0] == '_')
 			{
+				// NOTE: this buffer is supposed to be on the heap, to allow abi::__cxa_demangle to realloc()
+				// in case it is not big enough. this will crash. if this requirement isn't good enough for you,
+				// simply change the below line to allocate.
+				char buff[4096];
 				std::size_t length = sizeof(buff);
 				int status;
 
