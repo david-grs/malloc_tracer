@@ -50,36 +50,44 @@ void buz(StackInspector2& ss)
 void RRBacktrace()
 {
 	StackInspector2 ss;
-auto start = std::chrono::steady_clock::now();
-for (int i = 0; i < 1; ++i)
-buz(ss);
-auto end = std::chrono::steady_clock::now();
+	auto start = std::chrono::steady_clock::now();
+	for (int i = 0; i < 1000; ++i)
+	{
+		buz(ss);
+		ss.Dump();
+	}
+	auto end = std::chrono::steady_clock::now();
 
-ss.Dump();
-
-
-//std::cout << bt << std::endl;
- std::cout << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << std::endl;
+	std::cout << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000 << " us" << std::endl;
 }
 
 
 void foo()
 {
-RRBacktrace();
+	RRBacktrace();
 }
 
 struct FooObject
 {
-	void bar() { foo(); std::cout << _i << std::endl; }
+	void bar()
+	{
+		foo();
+		std::cout << _i << std::endl;
+	}
 
 	int _i;
 };
 
 
-void bar(FooObject& bb) { bb.bar(); }
+void bar(FooObject& bb)
+{
+	bb.bar();
+}
 
 int main()
 {
-FooObject bb;
-bar(bb);
+	FooObject bb;
+	bar(bb);
+
+	return 0;
 }
