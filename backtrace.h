@@ -8,6 +8,7 @@ extern "C"
 #include <array>
 #include <string_view>
 #include <cstring> // std::strlen
+#include <cstdlib> // std::free
 #include <algorithm> // std::equal
 
 #include <boost/functional/hash.hpp>
