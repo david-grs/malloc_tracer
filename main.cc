@@ -27,6 +27,10 @@ public:
 			{
 				std::cout << symbol << "\n";
 			});
+			backtrace.VisitSymbols([](std::string_view symbol)
+			{
+				std::cout << symbol << "\n";
+			});
 		}
 	}
 
