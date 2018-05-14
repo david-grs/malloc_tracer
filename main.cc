@@ -31,6 +31,15 @@ public:
 		return backtrace;
 	}
 
+	template <typename Callable>
+	void VisitAddresses(Callable visitor)
+	{
+		for (int i = 1; i < mFramesCount; i++)
+		{
+			visitor(mCallstack[i]);
+		}
+	}
+
 	// this function *does* allocate every time you call it.
 	// Callable: fn(std::string_view symbol)
 	template <typename Callable>
