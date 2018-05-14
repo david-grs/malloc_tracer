@@ -35,7 +35,7 @@ public:
 	}
 
 	// this function *does* allocate every time you call it.
-	// Callable: fn(std::string_view symbol)
+	// Callable: fn(const void* address, std::string_view symbol)
 	template <typename Callable>
 	void VisitSymbols(Callable visitor) const
 	{
@@ -45,14 +45,14 @@ public:
 		{
 			const std::size_t symbolLen = std::strlen(symbols[i]);
 			const std::string_view symbol(symbols[i], symbolLen);
-			visitor(symbol);
+			visitor(mCallstack[i], symbol);
 		}
 
 		std::free(symbols);
 	}
 
 	// this function *does* allocate every time you call it.
-	// Callable: fn(std::string_view symbol)
+	// Callable: fn(const void* address, std::string_view symbol)
 	template <typename Callable>
 	void VisitDemangledSymbols(Callable visitor) const
 	{
@@ -89,7 +89,7 @@ public:
 				symbol = std::string_view(symbolStr, symbolLen);
 			}
 
-			visitor(symbol);
+			visitor(mCallstack[i], symbol);
 		}
 
 		std::free(symbols);

@@ -24,12 +24,12 @@ public:
 			const int calls = p.second;
 
 			stream << "called " << calls << ":\n";
-			backtrace.VisitDemangledSymbols([&stream](std::string_view symbol)
+			backtrace.VisitDemangledSymbols([&stream](const void*, std::string_view symbol)
 			{
 				stream << symbol << "\n";
 			});
 
-			backtrace.VisitSymbols([&stream](std::string_view symbol)
+			backtrace.VisitSymbols([&stream](const void*, std::string_view symbol)
 			{
 				stream << symbol << "\n";
 			});
@@ -49,16 +49,18 @@ void buz(StackInspector& ss)
 
 void RRBacktrace()
 {
+	static const int Iterations = 1000;
+
 	StackInspector ss;
 	auto start = std::chrono::steady_clock::now();
-	for (int i = 0; i < 1000; ++i)
+	for (int i = 0; i < Iterations; ++i)
 	{
 		buz(ss);
 		ss.ToStream(std::cout);
 	}
 	auto end = std::chrono::steady_clock::now();
 
-	std::cout << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000 << " us" << std::endl;
+	std::cout << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / Iterations << " us" << std::endl;
 }
 
 
