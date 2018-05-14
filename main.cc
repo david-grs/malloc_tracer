@@ -109,9 +109,14 @@ namespace std
 template <std::size_t MaxFramesCount>
 struct hash<::Backtrace<MaxFramesCount>>
 {
-	std::size_t operator()(const Backtrace<MaxFramesCount>& bt) const
+	std::size_t operator()(const Backtrace<MaxFramesCount>& backtrace) const
 	{
-		return boost::hash_range(bt.mCallstack.cbegin(), bt.mCallstack.cbegin() + bt.mFramesCount);
+		std::size_t seed = 0;
+		backtrace.VisitAddresses([&seed](const void* addr)
+		{
+			boost::hash_combine(seed, addr);
+		});
+		return seed;
 	}
 };
 
