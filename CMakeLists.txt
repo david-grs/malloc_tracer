@@ -11,7 +11,7 @@ endif()
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${cxx_compile_options}")
 include(gtest.cmake)
 
-add_executable(tests unit_tests.cc backtrace.h stack_inspector.h)
+add_executable(tests unit_tests.cc backtrace.h mtrace.h malloc_profiler.h)
 
 find_package (Threads)
 target_link_libraries(tests dl gtest ${CMAKE_THREAD_LIBS_INIT})
