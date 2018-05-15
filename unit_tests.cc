@@ -1,4 +1,5 @@
-#include "stack_inspector.h"
+#include "malloc_profiler.h"
+#include "mtrace.h"
 
 #include "gtest/gtest.h"
 
@@ -22,7 +23,6 @@ TEST(BacktraceTest, Hash)
 {
 	Backtrace<10> backtrace{{(void*)&::std::malloc, (void*)&std::free}};
 
-
 	std::unordered_map<Backtrace<10>, int> ss;
 	ss[backtrace]++;
 	ss[backtrace]++;
@@ -31,40 +31,38 @@ TEST(BacktraceTest, Hash)
 	EXPECT_EQ(1, ss.size());
 }
 
-void bar(StackInspector&);
+std::unique_ptr<int> ss;
+
+void bar();
 
 struct A
 {
-	A(StackInspector& ss) :
-		mSS(ss)
-	{}
-
-	void foo() { bar(mSS); }
-
-	StackInspector& mSS;
+	void foo() { bar(); }
 };
 
-void bar(StackInspector& ss)
+void bar()
 {
-	ss.StoreBacktrace();
+	ss = std::make_unique<int>(5);
 }
 
 void buz(A&);
 
-TEST(StackInspector, Read)
+TEST(MallocProfiler, Read)
 {
 	static const int Iterations = 1000;
 
-	StackInspector ss;
-	A a(ss);
+	mtrace<MallocProfiler> mt;
+	A a;
 
 	auto start = std::chrono::steady_clock::now();
 	for (int i = 0; i < Iterations; ++i)
 	{
+		std::malloc(10);
 		buz(a);
 	}
 	auto end = std::chrono::steady_clock::now();
-	ss.ToStream(std::cout);
+	mt.handler().Poll();
+	mt.handler().ToStream(std::cout);
 
 	std::cout << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / Iterations << " us" << std::endl;
 }
