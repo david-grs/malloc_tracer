@@ -35,6 +35,7 @@ struct mtrace
 	}
 
 	const Handler& handler() const { return _handler; }
+	Handler& handler() { return _handler; }
 
 	static void* malloc(size_t size, const void* /*caller*/)
 	{
