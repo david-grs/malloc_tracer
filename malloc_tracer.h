@@ -6,12 +6,12 @@
 
 #include <boost/circular_buffer.hpp>
 
-class MallocProfiler
+class MallocTracer
 {
 public:
 	static constexpr std::size_t MaxFramesCount = 10;
 
-	explicit MallocProfiler() :
+	explicit MallocTracer() :
 		mLocalStorage(100000)
 	{}
 

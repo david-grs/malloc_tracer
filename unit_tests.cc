@@ -1,4 +1,4 @@
-#include "malloc_profiler.h"
+#include "malloc_tracer.h"
 #include "mtrace.h"
 
 #include "gtest/gtest.h"
@@ -47,11 +47,11 @@ void bar()
 
 void buz(A&);
 
-TEST(MallocProfiler, Read)
+TEST(MallocTracer, Read)
 {
 	static const int Iterations = 1000;
 
-	mtrace<MallocProfiler> mt;
+	mtrace<MallocTracer> mt;
 	A a;
 
 	auto start = std::chrono::steady_clock::now();
